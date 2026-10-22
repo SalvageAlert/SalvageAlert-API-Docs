@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Account, billing or a failing API call
+    url: https://salvagealert.com/contact
+    about: Contact support with your request_id. Please don't post keys or account details here.
+  - name: Reference documentation
+    url: https://salvagealert.com/developers/docs
+    about: The full interactive API reference.

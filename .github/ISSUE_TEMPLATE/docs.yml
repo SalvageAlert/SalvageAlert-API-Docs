@@ -1,0 +1,20 @@
+name: Docs or example problem
+description: Something in this repository is wrong, unclear or missing
+labels: [docs]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: File or section
+      placeholder: docs/webhooks.md#verifying-signatures
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong, and what did you expect?
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "**Never paste an API key or webhook secret.**"

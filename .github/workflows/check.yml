@@ -1,0 +1,27 @@
+name: Check examples and spec
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Node examples parse
+        run: for f in examples/node/*.mjs; do node --check "$f"; done
+      - name: Python examples compile
+        run: python -m py_compile examples/python/*.py scripts/*.py
+      - name: Shell examples parse
+        run: for f in examples/curl/*.sh scripts/*.sh; do bash -n "$f"; done
+      - name: Lint OpenAPI spec
+        run: npx --yes @redocly/cli@1.34.0 lint openapi/openapi.json --format=summary || true
+      - name: Postman collection is current
+        run: python scripts/build-postman.py && git diff --exit-code postman/

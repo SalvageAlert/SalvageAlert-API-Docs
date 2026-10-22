@@ -1,0 +1,1702 @@
+{
+  "info": {
+    "name": "SalvageAlert API v1.7.0",
+    "description": "Generated from https://salvagealert.com/api/v1/openapi.json. Set the `apiKey` collection variable to your sa_live_ key (https://salvagealert.com/app/api).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://salvagealert.com/api/v1"
+    },
+    {
+      "key": "apiKey",
+      "value": "sa_live_REPLACE_ME"
+    }
+  ],
+  "item": [
+    {
+      "name": "Lots",
+      "item": [
+        {
+          "name": "POST /lots/search \u00b7 Search lots",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lots/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lots",
+                "search"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Search lots from one source. Cache hits cost 0 credits. Each source pushes down the filters its site can apply (keyword everywhere; year, damage, title and price on IAA Canada; make and year on the Copart feed; a single make on IAA US and GovDeals), and every page is then run through the same local gate the app uses, so a filter the source cannot apply still holds \u2014 the lots it removes are counted in `filtered_out`. A cache hit is never refused for balance: the pre-authorisation checks the cache first, so an account at 0 credits can still replay a cached page. A page can therefore be short or empty while `total_estimate` is large: `total_estimate` is the source's own count for the part of the request it applied, not the count after the gate. Keep paging by `page`, not by comparing lots seen to `total_estimate`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"copart_us\",\n  \"makes\": [\n    \"HONDA\"\n  ],\n  \"models\": [\n    \"CIVIC\"\n  ],\n  \"year_min\": 2020,\n  \"year_max\": 2024\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /lots/{source}/{lot_key} \u00b7 Fetch a single lot by stock #",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/lots/{source}/{lot_key}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lots",
+                ":source",
+                ":lot_key"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "source",
+                  "value": ""
+                },
+                {
+                  "key": "lot_key",
+                  "value": "50567636"
+                }
+              ]
+            },
+            "description": "Always bypasses cache so bids and sale state are live. 1 credit on a hit. On copart_us and copart_ca the source of truth is the Copart Sales Data feed we import three times a day (08:00, 14:00, 19:00 New York time), not a live page fetch, so a lot is at most a few hours old there; IAA and GovDeals lookups hit the auction live. A lot the source no longer lists \u2014 sold and removed, or withdrawn \u2014 is a 404 here even while /inventory still carries it; see `Lot.isAuctionClosed` for how to read sale status on a hit. A miss is not free: the lookup still fires a live source query, so a 404 that ran that query is charged a reduced miss fee of 1 credit. Request-shape 400s cost nothing, and so does an unsupported source, which is refused before any query runs. The exact amount is on X-Credits-Charged."
+          }
+        },
+        {
+          "name": "GET /lots/{source}/{lot_key}/images \u00b7 List all gallery photo URLs (IAA + Copart)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/lots/{source}/{lot_key}/images",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lots",
+                ":source",
+                ":lot_key",
+                "images"
+              ],
+              "query": [
+                {
+                  "key": "width",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "height",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "source",
+                  "value": ""
+                },
+                {
+                  "key": "lot_key",
+                  "value": "50567636"
+                }
+              ]
+            },
+            "description": "Enumerate every photo the source exposes for the lot \u2014 not just the listing-page thumbnail. IAA (iaai_ca/us): enumerated from the anchor via the resizer (width/height apply); up to 50 URLs \u2014 `limit` can lower that and cannot raise it, because the enumeration walks one prefix and stops at 50. Copart (copart_ca/us/uk): full high-res set from the public gallery (fixed resolution \u2014 width/height ignored). Costs 4 credits. A miss is not free: the lookup still fires a live source query, so a 404 that ran that query is charged a reduced miss fee of 1 credit. Request-shape 400s cost nothing, and so does an unsupported source, which is refused before any query runs. The exact amount is on X-Credits-Charged."
+          }
+        },
+        {
+          "name": "GET /lots/{source}/{lot_key}/images.zip \u00b7 Download all photos as a ZIP (IAA + Copart)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/lots/{source}/{lot_key}/images.zip",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lots",
+                ":source",
+                ":lot_key",
+                "images.zip"
+              ],
+              "query": [
+                {
+                  "key": "width",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "height",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "source",
+                  "value": ""
+                },
+                {
+                  "key": "lot_key",
+                  "value": "50567636"
+                }
+              ]
+            },
+            "description": "Server-built ZIP containing every photo the source exposes for the lot \u2014 IAA (iaai_ca/us, plus the exterior-360 raw frames) and Copart (copart_ca/us/uk, full high-res gallery). Up to 100 full-resolution JPEGs, fetched in parallel server-side \u2014 plus, on IAA, up to 36 exterior-360 raw frames under `360/`, so the archive can hold up to 136 entries. `X-Photos-Included` reports what actually went in. Returns application/zip with Content-Disposition attachment. Costs 8 credits. A miss is not free: the lookup still fires a live source query, so a 404 that ran that query is charged a reduced miss fee of 1 credit. Request-shape 400s cost nothing, and so does an unsupported source, which is refused before any query runs. The exact amount is on X-Credits-Charged."
+          }
+        },
+        {
+          "name": "GET /vin/{vin}/history \u00b7 VIN relisting history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin/{vin}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin",
+                ":vin",
+                "history"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "vin",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Every distinct lot we have archived for a full 17-character VIN, across every source \u2014 the relisting / flip trail. Copart lots carry full, unmasked VINs across the United States, Canada, the United Kingdom and Germany, so cross-source matches are reliable. IAA lots carry a full VIN only where an authenticated crawl reached them. Newest first. Costs 1 credit. Returns 404 if the VIN has never been seen."
+          }
+        },
+        {
+          "name": "GET /vin/{vin}/title-check \u00b7 Title-brand / salvage-history check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin/{vin}/title-check",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin",
+                ":vin",
+                "title-check"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "vin",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Carfax-lite title check: whether a VIN has any salvage-auction record in our IAA/Copart archive, and whether any listing carries an explicitly branded title (salvage/rebuilt/flood/junk/\u2026). Always 200 \u2014 a missing record is a valid (clean-so-far) answer, not proof of a clean title.\n\n1 credit when the VIN is found; a miss (`found: false`) is free, matching `/vin/{vin}/history` and `/vin/batch`."
+          }
+        },
+        {
+          "name": "POST /vin/batch \u00b7 Bulk VIN history",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin/batch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin",
+                "batch"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Look up relisting history for many VINs in one call (max 50).\n\nCharges 1 credit per VIN that RETURNED AT LEAST ONE LOT. A VIN we hold nothing for is free, exactly as /vin/{vin}/history 404s an unknown VIN at 0 credits \u2014 the same lookup costs the same through either endpoint. Malformed entries are echoed back in `invalid` and never billed.\n\n`requested` is what you sent, `looked_up` is the valid deduped set we searched, and `billed` is the subset that had results \u2014 `billed` is what X-Credits-Charged will say. Your balance is pre-authorised for the worst case (every valid VIN a hit) before the lookups run, so a 402 means you could not have afforded the whole batch even though the real charge may be lower.\n\nEach result mirrors the single VIN-history lot shape."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "GET /inventory \u00b7 Browse archived inventory",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inventory"
+              ],
+              "query": [
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Restrict to one source, e.g. govdeals_us."
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Free-text across make/model/VIN/lot_key/damage."
+                },
+                {
+                  "key": "make",
+                  "value": "FORD",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "model",
+                  "value": "F-150",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "year_min",
+                  "value": "2015",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "year_max",
+                  "value": "2024",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "max_odometer_km",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "price_min_usd",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Lower bound of a band either the current bid or the Buy Now price satisfies, in USD."
+                },
+                {
+                  "key": "price_max_usd",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Upper bound of that band, in USD."
+                },
+                {
+                  "key": "damage",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Primary damage bucket."
+                },
+                {
+                  "key": "body",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "fuel",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "drive",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "transmission",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "seller",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Who is selling, classified from the seller name: an insurance carrier, a rental or fleet operator, a lender, a dealer, a charity."
+                },
+                {
+                  "key": "sale_terms",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Under what terms the lot sells: pure-sale (the high bid wins outright), minimum-bid (a reserve applies), on-approval (the seller may refuse the high bid). Copart lots only; IAA publishes no equivalent."
+                },
+                {
+                  "key": "buy_now",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only lots with a Buy Now price."
+                },
+                {
+                  "key": "clean_title",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Clean / non-branded titles only."
+                },
+                {
+                  "key": "title",
+                  "value": "",
+                  "disabled": true,
+                  "description": "One branded-title bucket: salvage (repairable), rebuilt (re-certified) or parts (non-repairable)."
+                },
+                {
+                  "key": "runs_drives",
+                  "value": "",
+                  "disabled": true,
+                  "description": "The auction house verified the vehicle runs and drives."
+                },
+                {
+                  "key": "has_keys",
+                  "value": "",
+                  "disabled": true,
+                  "description": "A key was present at intake."
+                },
+                {
+                  "key": "ending_within_hours",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only lots scheduled to close within this many hours of now; excludes the unscheduled and the ended."
+                },
+                {
+                  "key": "location",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Free text the yard, branch or vehicle location must contain (substring, case-insensitive)."
+                },
+                {
+                  "key": "yard",
+                  "value": "",
+                  "disabled": true,
+                  "description": "One yard, EXACT vehicle location in the spelling GET /yards returns (\"HAMPTON, VA\"). Index-served; prefer this over location for a known yard."
+                },
+                {
+                  "key": "state",
+                  "value": "TX",
+                  "disabled": true,
+                  "description": "Two-letter US state or Canadian province code of the yard."
+                },
+                {
+                  "key": "repair_pct_max",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only lots whose repair estimate is at most this share of their retail value; both figures must be the house's own."
+                },
+                {
+                  "key": "include_sold",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Also return lots that have ENDED, each with its `sold_at` where we recorded one. Off by default, so a plain walk is live stock and `sold_at` is always null there. With it on you get sold lots and lots the source stopped listing without a recorded sale \u2014 the latter can have a null `sold_at` and a sal"
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Offset mode only \u2014 ignored when `cursor` or `updated_since` is sent."
+                },
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Offset mode, 1-based. Values above 500 are clamped to 500 rather than rejected \u2014 every request runs two full GROUP BY walks over the catalogue, so an unbounded page number lets one client saturate the service. Do NOT use this to walk the catalogue; use `cursor`. Ignored when `cursor` or `updated_sin"
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Applies to both modes."
+                },
+                {
+                  "key": "updated_since",
+                  "value": "1757000000",
+                  "disabled": true,
+                  "description": "Unix SECONDS. Return only lots whose `archived_at` is at or after this instant. Selects keyset mode. Milliseconds are rejected with `invalid_updated_since` rather than silently matching nothing \u2014 note that `sale_date_utc` on the same lot object IS in milliseconds."
+                },
+                {
+                  "key": "cursor",
+                  "value": "1756900000:copart_us:12345678",
+                  "disabled": true,
+                  "description": "The `next_cursor` from a previous response, passed back verbatim. Selects keyset mode. Format is `<archived_at>:<source>:<lot_key>`; treat it as opaque."
+                }
+              ],
+              "variable": []
+            },
+            "description": "Page through the public archived-inventory index \u2014 the same de-duplicated, continuously-crawled catalogue behind salvagealert.com/lots. Reads pre-archived stock from our index (no live source fetch). Costs 1 credit per call.\n\n**Two pagination modes. Only one of them is safe for bulk.**\n\n`page` is an OFFSET into a table the poller and three crawlers write to continuously. It is correct for jumping to a page a person will read, and wrong for mirroring: at page_size=100 a full walk of the catalogue is thousands of requests, rows shift underneath it throughout, and the walk silently skips and duplicates lots. It is capped at page 500.\n\n`cursor` is the keyset mode and is what you want for a mirror. Results are ordered by (archived_at, source, lot_key) ascending; pass the `next_cursor` from the previous response to resume, and stop when it comes back null. A lot the crawler re-touches mid-walk moves to the END of that ordering \u2014 which the walk has not reached \u2014 so it is re-emitted rather than skipped. Send `cursor` or `updated_since` (or both) to select this mode; `page` and `sort` are then ignored, because the ordering IS the cursor.\n\n`updated_since` (unix SECONDS, compared against `archived_at`) is the incremental half: having mirrored once, ask only for what has changed rather than re-walking the whole catalogue at a credit a page. Combine it with `cursor` to page through a large delta. `archived_at` moves whenever a lot CHANGES \u2014 bid, sale date, photo, identity, a sale \u2014 and not on a re-crawl that found it unchanged, so a delta is exactly the lots whose details changed plus those new to you; upsert on (source, lot_key). With `include_sold=true` the delta also carries the lots that sold since, each with its `sold_at`.\n\nLots deleted from our catalogue are NOT reported by this endpoint \u2014 a mirror should treat a lot it has not seen for a while as stale rather than expecting a tombstone.\n\n**Ended lots are opt-in.** By default the endpoint returns live stock only, so every row has `sold_at` null. Send `include_sold=true` to receive the ended archive too: lots that sold, and lots the source stopped listing without a sale we could record. The second kind can carry a null `sold_at`, so treat a `sale_date_utc` in the past as ended rather than reading `sold_at` alone. It works in both pagination modes and combines with `updated_since`, since a sale moves `archived_at`. What it never returns is a lot a SalvageAlert account holder hid from their own view \u2014 a lot OUR crawler simply stopped seeing is catalogue history, and is returned.\n\nAs of 2026-09-02 each lot also carries acv, title_state, origin_country, sale_event_status, sale_light, autograde, make_offer, wholesale_only, former_rental, offsite/offsite_location, lane, run_number, airbags_status, loss_type, has_keys, drives, starts and trim \u2014 additive, so existing integrations are unaffected. As of 2026-09-04 it also carries high_prebid_value, buy_now_value and sold_at, so prices can be sorted and charted without parsing the formatted current_bid/buy_now strings, and an ended lot can be told from a live one."
+          }
+        },
+        {
+          "name": "GET /inventory/{source}/{lot_key} \u00b7 One archived lot by identity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/{source}/{lot_key}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inventory",
+                ":source",
+                ":lot_key"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "source",
+                  "value": ""
+                },
+                {
+                  "key": "lot_key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "A single lot from the catalogue, off the index \u2014 the same InventoryLot shape `/inventory` pages through, for every one of the eight sources. No live source fetch: this is the read for a mirror re-checking a lot it already holds, or for resolving a `(source, lot_key)` a webhook delivered. 1 credit on a hit, nothing on a miss; an index lookup is not a scrape, so a 404 is not a fee. For the freshest bid straight from the auction house, `/lots/{source}/{lot_key}` still asks live."
+          }
+        },
+        {
+          "name": "GET /inventory/sources \u00b7 Inventory counts per source",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inventory",
+                "sources"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Live active-lot counts per source in the archived-inventory index. Use it to discover how much stock each source has available before paging /inventory. 0 credits."
+          }
+        },
+        {
+          "name": "GET /auctions \u00b7 The auction calendar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auctions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auctions"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Every upcoming IAA USA, IAA Canada and Copart sale the worker has read, one chronological list sorted by start. A Copart sale carries its `yard` in the spelling /inventory?yard= takes and `catalog_lots`, how many lots we hold there with a sale in the next eight days. `copart_stale` says the Copart list is older than we trust; check Copart's own calendar before planning around it. `iaai_us_upcoming_days` lists days IAA USA advertises without their lots. Stored rows, refreshed by the worker; nothing is scraped on your call. 0 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "GET /me \u00b7 Account profile + credit balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Your account, live credit balance and current per-minute rate limit. 0 credits."
+          }
+        },
+        {
+          "name": "GET /usage \u00b7 API usage statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usage"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": []
+            },
+            "description": "Per-day and per-endpoint counts for the last N days (max 90)."
+          }
+        },
+        {
+          "name": "GET /api-keys \u00b7 List your API keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Every key on the account, live and revoked, masked to its display prefix. `current` marks the key this call was made with. Free."
+          }
+        },
+        {
+          "name": "POST /api-keys \u00b7 Mint a new API key",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Issues one more key without touching the others \u2014 a second service, a staging box, a key per customer. The raw secret is returned ONCE. `project_url` is where the key is called from and is required unless a live key on the account already names one, in which case it is carried over. An account may hold 20 active keys. Free. To replace every key at once, see /api-keys/rotate."
+          }
+        },
+        {
+          "name": "DELETE /api-keys/{id} \u00b7 Revoke one API key",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Revokes a single key. The calling key may revoke itself \u2014 the response lands and the next call with it is a 401. Free."
+          }
+        },
+        {
+          "name": "POST /api-keys/rotate \u00b7 Rotate keys (account-wide, destructive)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/rotate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "rotate"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "**Privileged and irreversible.** Revokes EVERY active key on the account \u2014 not just the one that made this call \u2014 and mints a single fresh key. The raw secret is returned ONCE and cannot be retrieved again; only its hash and display prefix are stored.\n\nAny other integration still holding an older key starts receiving 401 `invalid_credentials` immediately, so on a multi-key account this is a deploy, not a maintenance task.\n\nIt costs 0 credits and requires no re-authentication beyond the bearer key itself, which means a leaked key can rotate the account and lock out its legitimate owner. The account owner is emailed on every rotation \u2014 if you receive that mail and did not rotate, rotate again to cut the holder off and check your API usage log."
+          }
+        },
+        {
+          "name": "GET /matches \u00b7 Your match history as JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/matches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches"
+              ],
+              "query": [
+                {
+                  "key": "since",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only rows matched at or after this Unix timestamp (seconds)."
+                },
+                {
+                  "key": "until",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only rows matched at or before this Unix timestamp (seconds)."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter to a single source."
+                },
+                {
+                  "key": "search_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter to one of your saved searches."
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true,
+                  "description": "The previous page's next_cursor (\"<matched_at>:<id>\")."
+                }
+              ],
+              "variable": []
+            },
+            "description": "The lots your saved searches matched, newest first, drawn only from your own searches \u2014 the pull path beside the webhook push: reconcile a receiver that was down, or poll with `since`. Keyset-paged: pass the previous page's `next_cursor` as `cursor`; it is null on the last page. Same columns as the CSV export, with epoch integers where the CSV prints ISO strings. Free."
+          }
+        },
+        {
+          "name": "GET /matches/{id} \u00b7 One of your matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/matches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "A single matched lot from your own searches, with your annotations on it. Free. A match on another account is a 404."
+          }
+        },
+        {
+          "name": "PATCH /matches/{id} \u00b7 Favorite, dismiss, annotate or price a match",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/matches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Writes your decisions on a matched lot: favorite or un-favorite it, dismiss or restore it, set or clear the ceiling (`max_bid_value`) that the max-bid alert and `max_bid_crossed` webhook fire on, the Buy Now target (`price_alert_value`) behind `price_drop`, a private note, and the won and resale prices the won ledger and margin read. Free.\n\nSend only the fields you want changed \u2014 an omitted field is left alone; `null` clears a price or the note. Sending nothing is a 400. The ceiling and the target are favorites features, so set `favorited: true` in the same body if the lot is not one yet; `resale_price` needs a won lot. Returns the full updated Match.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "GET /matches.csv \u00b7 Export your match history as CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/matches.csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches.csv"
+              ],
+              "query": [
+                {
+                  "key": "since",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only rows matched at or after this Unix timestamp (seconds)."
+                },
+                {
+                  "key": "until",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Only rows matched at or before this Unix timestamp (seconds)."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter to a single source."
+                },
+                {
+                  "key": "search_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter to one of your saved searches."
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": []
+            },
+            "description": "Streams your saved-search match history as a CSV download, drawn only from your own searches. Free \u2014 the data was paid for at poll time; reading it back is a download, not a scrape. Up to 50,000 rows per call, newest first.\n\n**Timestamps in the file are ISO-8601 UTC strings** (`2026-01-15T09:00:00.000Z`) \u2014 every one of them, including `sale_date_utc`, which is an epoch integer everywhere else on this API. That is the only representation a spreadsheet opens as a date, and this endpoint exists to be opened in one. The `since` and `until` QUERY parameters are still epoch seconds, because they are API inputs rather than file contents. See `x-conventions`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reference",
+      "item": [
+        {
+          "name": "GET /makes \u00b7 Vehicle make catalogue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/makes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "makes"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /models \u00b7 Model list for a make",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/models",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models"
+              ],
+              "query": [
+                {
+                  "key": "make_id",
+                  "value": "230",
+                  "disabled": false,
+                  "description": ""
+                }
+              ],
+              "variable": []
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /yards \u00b7 Yard / branch catalogue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/yards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "yards"
+              ],
+              "query": [
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": false,
+                  "description": ""
+                }
+              ],
+              "variable": []
+            },
+            "description": "The shape of `yards` depends on the source, so switch on `source` before reading it.\n\n- `copart_ca`, `copart_us` \u2014 physical yards: `{ code, name, region }`, where region is the province or state, uppercase.\n- `iaai_ca` \u2014 the .NET provincial branch catalogue: `{ id, name, province }`. Note `id` is a NUMBER and there is no `code`; a client written against the Copart shape reads undefined here.\n- `iaai_uk`, `iaai_us`, `copart_uk`, `copart_de`, `govdeals_us` \u2014 `yards` is an empty array and a `note` explains what to pass to /lots/search instead. This is the documented answer for those sources, not a failure or an empty catalogue.\n\n0 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "GET /webhooks \u00b7 List webhooks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /webhooks \u00b7 Create webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "The HMAC `secret` is returned exactly once on creation and cannot be retrieved afterwards.\n\nThe URL must be absolute https \u2014 plain http is refused with `non_https`. It is validated on creation AND re-validated at every delivery, so a host that later resolves into a private range stops being delivered to: private / RFC1918 / loopback / cloud-metadata addresses are refused (`private_address`), as are unresolvable hosts (`dns_unresolvable`), URLs carrying `user:pass@` (`credentials_in_url`) and anything unparseable (`invalid_url`). A URL that starts failing this check counts toward the 20-failure auto-disable like any other failure.\n\n`format` defaults to whatever your URL looks like \u2014 see the Webhook schema, and note that a Discord or Slack URL disables HMAC signing.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "GET /webhooks/{id} \u00b7 Get webhook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PATCH /webhooks/{id} \u00b7 Update webhook",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Partial update. Sending `{\"active\": true}` is how you bring back a subscription that was auto-disabled after 20 consecutive failures \u2014 fix the receiver first, because the counter is not reset until a delivery actually succeeds. Changing `url` re-runs the same SSRF validation as creation. The `secret` is never re-issued here; rotate the webhook by deleting and recreating it if you need a new one.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /webhooks/{id} \u00b7 Delete webhook",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /webhooks/{id}/test \u00b7 Test fire",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id",
+                "test"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Synchronous one-shot delivery for testing your receiver. Not persisted to the deliveries log; not retried on failure. It is shaped like a real delivery: event `webhook.test`, `data.kind` = `test`, the same 15 s timeout, and an `X-Salvagealert-Delivery-Id` header carrying the `delivery_id` returned here.\n\nRate-limited to 6 per minute PER WEBHOOK, on top of the account allowance: this is the one endpoint that makes an outbound request on your word, and it holds the connection open for up to 15 seconds."
+          }
+        },
+        {
+          "name": "GET /webhooks/{id}/deliveries \u00b7 Delivery log",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}/deliveries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id",
+                "deliveries"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Recent deliveries for a webhook, newest first. Use it to self-debug a failing receiver without contacting support \u2014 and to see how close a subscription is to the 20-failure auto-disable. Statuses: `pending` (queued or awaiting its next backoff attempt), `delivered` (a 2xx), `failed` (permanently refused \u2014 a non-retryable 4xx, or a URL that failed re-validation), `dead` (all 7 attempts exhausted, or dropped because the subscription was disabled). 0 credits."
+          }
+        },
+        {
+          "name": "POST /webhooks/{id}/deliveries/{deliveryId}/redeliver \u00b7 Redeliver one past delivery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{id}/deliveries/{deliveryId}/redeliver",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                ":id",
+                "deliveries",
+                ":deliveryId",
+                "redeliver"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                },
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Queue a failed, dead or delivered delivery again: same payload, a fresh attempt count, sent on the worker's next drain (within a minute). A `pending` delivery is refused with 409 \u2014 it is already on its way. Rate-limited to 20 per minute per account, since it makes an outbound request to a URL you control. 0 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "VIN watches",
+      "item": [
+        {
+          "name": "GET /vin-watches \u00b7 List VIN watches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Every VIN watch on the account, each with the lots it has found and its event trail (listed, sold, listed again). 0 credits."
+          }
+        },
+        {
+          "name": "POST /vin-watches \u00b7 Create a VIN watch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Watch one vehicle. Passively, every lot ingested on any source is checked against the VIN and a hit sends a `lot.matched` delivery of kind `vin_watch_match`; with a `region` and `sources` the watch also runs the VIN as a keyword search on those sources every 48 h (or on demand with /run). The watch survives relistings \u2014 it keys on the VIN, not the lot number \u2014 and after a hit it reports the sale and any return in `events`. The VIN is fixed at creation. One watch per VIN per account (409 `duplicate`); at most 200 watches (429 `too_many_watches`); a plan without VIN watches is refused with 403 `plan_gate`. 0 credits.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "GET /vin-watches/{id} \u00b7 Read a VIN watch",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PATCH /vin-watches/{id} \u00b7 Pause, resume or edit a VIN watch",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Send only the fields you want changed: `active`, `label`, `region`, `sources`. Omitted fields are left alone; an empty body is a 400. The VIN cannot be changed. Returns the full updated watch. 0 credits.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /vin-watches/{id} \u00b7 Delete a VIN watch",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /vin-watches/{id}/run \u00b7 Run a VIN watch now",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vin-watches/{id}/run",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vin-watches",
+                ":id",
+                "run"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Run the watch's keyword sweep inline on the sources it names and return what it found. Needs a region and sources. Once per 24 h per watch (429 `cooldown` with `retry_after_s`), since a sweep is a live source query. 0 API credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Watches",
+      "item": [
+        {
+          "name": "GET /watches \u00b7 List watches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/watches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "watches"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /watches \u00b7 Create watch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/watches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "watches"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Saved filter set that triggers `lot.matched` events (kind `watch_match`). filters JSON is capped at 4 KB \u2014 over it, 400 `watch_filters_too_large`.\n\nTo pause a watch, PATCH it with `{\"active\": false}` and PATCH it back when you want it firing again \u2014 the id survives, so anything you correlate on it keeps working. `active` is YOURS ALONE: nothing on the server ever clears it. A `vin_watch_match` delivery comes from the per-VIN watches, a different feature that stands itself down once it finds its vehicle; those live under /vin-watches.\n\n`source` and `filters` are fixed at creation. They define what the watch IS, so changing them would repoint an id you are already correlating on \u2014 POST a new watch instead.\n\nWHAT A WATCH SEES: lots as they are INGESTED BY A SAVED SEARCH \u2014 this account's or any other's. It is not the whole catalogue. The bulk imports that also fill it (the daily Copart sales feed, the archive crawl, the Buy Now crawl) do not fan out to watches, so a lot that only ever arrives that way appears in `/v1/inventory` without ever having triggered a watch. Poll `/v1/inventory` with `updated_since` when you need every lot; use a watch when you want to be told about the ones people are actively tracking.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"copart_us\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /watches/{id} \u00b7 Pause, resume or relabel a watch",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/watches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "watches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Updates `active` and/or `label` in place. Free.\n\nSend only the fields you want changed \u2014 an omitted field is left alone, so `{\"active\": false}` will not blank the label. Sending neither is a 400 rather than a silent no-op. Returns the full updated Watch.\n\n`source` and `filters` cannot be patched; see POST /watches.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /watches/{id} \u00b7 Delete watch",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/watches/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "watches",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicle data",
+      "item": [
+        {
+          "name": "GET /vehicles/vin/{vin} \u00b7 Decode a VIN",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/vin/{vin}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vehicles",
+                "vin",
+                ":vin"
+              ],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "vin",
+                  "value": "1HGCM82633A004352"
+                }
+              ]
+            },
+            "description": "Decode a 17-character VIN into a structured vehicle spec: year, make, model, trim, body class, engine, drivetrain, transmission, plant and more. Pass ?year= to disambiguate pre-2010 VINs. Costs 0.2 credits."
+          }
+        },
+        {
+          "name": "GET /vehicles/safety \u00b7 Recalls + crash-test safety",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/safety",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vehicles",
+                "safety"
+              ],
+              "query": [
+                {
+                  "key": "make",
+                  "value": "Honda",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "model",
+                  "value": "Accord",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "year",
+                  "value": "2018",
+                  "disabled": false,
+                  "description": ""
+                }
+              ],
+              "variable": []
+            },
+            "description": "Open recall campaigns plus crash-test safety ratings for a year/make/model. Costs 0.2 credits.\n\n**`recalls.count: 0` means no OPEN recalls, and only for a model NHTSA recognises.** A model name it does not list \u2014 a typo, or a market-specific name \u2014 answers 404 `no_match` rather than zero recalls, which would read as a clean bill of health for a car that does not exist. `model_recognized` reports which of the two you have: `true` confirmed, `null` when NHTSA's own model catalogue could not be read (the recall and rating figures still stand).\n\n**Ratings are per variant.** NCAP rates each body/drivetrain variant separately (\"2018 HONDA ACCORD 4 DR FWD\"), and `ratings` describes the FIRST one NHTSA lists, named in `ratings.variant`. `rated_variants` carries every variant it rates for that year/make/model, so a caller looking at a specific trim can see whether the stars belong to it."
+          }
+        },
+        {
+          "name": "GET /vehicles/fuel-economy \u00b7 Fuel economy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/fuel-economy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vehicles",
+                "fuel-economy"
+              ],
+              "query": [
+                {
+                  "key": "make",
+                  "value": "Toyota",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "model",
+                  "value": "Camry",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "year",
+                  "value": "2020",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "trim",
+                  "value": "Auto (S8), 4 cyl, 2.5 L",
+                  "disabled": true,
+                  "description": "Pick one of the trims in `trims` (case-insensitive, exact match first, then substring). Omit to use the first the EPA lists. An unmatched trim is 404 `no_match`, never a silent fall back to another trim."
+                }
+              ],
+              "variable": []
+            },
+            "description": "EPA MPG, fuel type, CO2 and estimated annual fuel cost for a year/make/model. Costs 0.2 credits.\n\n**The EPA rates trims, not models.** A 2020 Camry is 39 MPG combined as a 4-cylinder and 26 as a V6, and they are separate records. Pass `trim` to pick one (matched case-insensitively, exact first then as a substring); without it the FIRST record the EPA lists is used, which is menu order and not \"the usual one\". `trims` returns every trim available for that year/make/model so the choice can be made explicitly, and `trim` names the one the figures describe.\n\n**Zero is a value.** `co2_g_per_mile: 0` on a battery-electric car is its tailpipe emission, not a missing reading; unknown figures are `null`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Currency",
+      "item": [
+        {
+          "name": "GET /fx \u00b7 Reference exchange rates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "fx"
+              ],
+              "query": [
+                {
+                  "key": "base",
+                  "value": "USD",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "symbols",
+                  "value": "EUR,CAD,GBP",
+                  "disabled": true,
+                  "description": "Comma-separated target currency codes."
+                }
+              ],
+              "variable": []
+            },
+            "description": "Daily reference exchange rates for converting auction prices across the currencies SalvageAlert lots trade in. Defaults to USD base against USD, EUR, CAD and GBP. Costs 0.2 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Market data",
+      "item": [
+        {
+          "name": "GET /stats/market \u00b7 Aggregate market statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stats/market",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "market"
+              ],
+              "query": [
+                {
+                  "key": "make",
+                  "value": "TOYOTA",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "model",
+                  "value": "COROLLA",
+                  "disabled": true,
+                  "description": "Optional model filter."
+                }
+              ],
+              "variable": []
+            },
+            "description": "Aggregate price snapshot for a make (and optional model) across the whole archive. Costs 1 credit.\n\n**What the price actually is.** Each distinct lot \u2014 one row per (source, lot number) \u2014 contributes its Buy Now price if it has one, otherwise its highest pre-bid, converted to USD at the current reference rate. That is the best price we hold for the lot, NOT a confirmed sale price: most salvage lots sell on approval and the hammer price is never published, so nothing here is a \"winning bid\". Treat it as the asking/bidding level, not the settlement.\n\n**Which lots each number counts.** `lot_count` is every distinct lot matching the make/model, priced or not. `avg_bid`, `median_bid`, `min_bid` and `max_bid` are computed over the SUBSET that carries a price above zero, which is smaller and is not currently returned \u2014 so `avg_bid \u00d7 lot_count` is not a market total. `avg_retail_value` is likewise averaged only over lots carrying a pre-loss retail estimate. `median_bid` is the lower of the two middle values on an even count. No outlier trimming is applied: a mistyped 9,999,999 bid in a feed moves `max_bid` and `avg_bid` and leaves `median_bid` alone, which is why the median is the number to build on."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fees & taxes",
+      "item": [
+        {
+          "name": "GET /fees/estimate \u00b7 All-in buyer-fee estimate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fees/estimate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "fees",
+                "estimate"
+              ],
+              "query": [
+                {
+                  "key": "source",
+                  "value": "iaai_ca",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "bid",
+                  "value": "5000",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "tax_region",
+                  "value": "QC",
+                  "disabled": true,
+                  "description": "Canadian province (QC, ON, AB, BC, MB, SK, NB, NS, NL or PE) for iaai_ca / copart_ca, or a US state (FL, TX, \u2026 incl. DC) for iaai_us / copart_us / govdeals_us. Validated against the source's country: a region the market cannot charge is refused with `invalid_tax_region` rather than applied by name. "
+                },
+                {
+                  "key": "include_taxes",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Set 0 to omit PST/GST."
+                },
+                {
+                  "key": "buyer_tier",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "payment_type",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Accepted and currently IGNORED. No schedule we hold splits its buyer fee by payment method \u2014 the Copart Canada tables that once did were unsourced and removed \u2014 so the estimate is identical either way. It stays in the contract because clients send it; it will start moving the number only if a market"
+                },
+                {
+                  "key": "bid_type",
+                  "value": "",
+                  "disabled": true,
+                  "description": "How the lot is acquired. `preBid` and `liveBid` select the house's internet bid fee column. `buyNow` is a purchase at the listed price, which is not an awarded bid, so no internet or proxy bid fee line is charged at all \u2014 send it when you are pricing a Buy Now lot, or the estimate overstates the cos"
+                },
+                {
+                  "key": "vehicle_category",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "recreational",
+                  "value": "",
+                  "disabled": true,
+                  "description": "A motorcycle, ATV, snowmobile, jet ski, boat or RV. In Quebec the auction then charges QST on the sale price as well as the fees; a road vehicle's QST on its price is paid at registration instead."
+                }
+              ],
+              "variable": []
+            },
+            "description": "All-in buyer-fee breakdown for a hammer price on any marketplace we cover (IAA CA/US/UK, Copart CA/US/UK/DE). Pure calculation \u2014 no scrape. Returns the itemized fee lines plus optional PST/GST. Costs 0.2 credits."
+          }
+        }
+      ]
+    }
+  ]
+}
